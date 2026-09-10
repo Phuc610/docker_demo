@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Cá Nhân | FastAPI Profile</title>
+    <meta name="description" content="Ứng dụng quản lý hồ sơ cá nhân viết bằng FastAPI với giao diện chỉnh sửa trực quan.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Background glow decorations -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <div class="container">
+        <!-- Main Profile Card -->
+        <main class="profile-card" id="profileCard">
+            <!-- Header banner -->
+            <div class="card-header"></div>
+
+            <!-- Profile Content Area -->
+            <div class="card-body">
+                <!-- Avatar with dynamic initials -->
+                <div class="avatar-container">
+                    <div class="avatar" id="avatarLetter">NA</div>
+                </div>
+
+                <!-- === VIEW MODE === -->
+                <div id="viewMode" class="mode-section active">
+                    <h1 class="profile-name" id="viewName">{{ profile.name }}</h1>
+                    <p class="profile-email">
+                        <i class="fa-regular fa-envelope"></i>
+                        <span id="viewEmail">{{ profile.email }}</span>
+                    </p>
+
+                    <div class="interests-section">
+                        <h2 class="section-title"><i class="fa-solid fa-heart"></i> Sở thích & Kỹ năng</h2>
+                        <div class="tags-container" id="viewInterests">
+                            {% for interest in profile.interests %}
+                            <span class="tag">{{ interest }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" id="btnOpenEdit">
+                        <i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa hồ sơ
+                    </button>
+                </div>
+
+                <!-- === EDIT MODE === -->
+                <div id="editMode" class="mode-section">
+                    <h2 class="edit-title">Chỉnh sửa thông tin</h2>
+                    
+                    <form id="profileForm" novalidate>
+                        <div class="form-group">
+                            <label for="inputName"><i class="fa-regular fa-user"></i> Họ và tên</label>
+                            <input type="text" id="inputName" class="form-control" placeholder="Nhập họ và tên..." required>
+                            <span class="error-text" id="nameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputEmail"><i class="fa-regular fa-envelope"></i> Email</label>
+                            <input type="email" id="inputEmail" class="form-control" placeholder="example@domain.com" required>
+                            <span class="error-text" id="emailError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-tags"></i> Sở thích (Interest)</label>
+                            <div class="tag-input-wrapper">
+                                <input type="text" id="inputTag" class="form-control" placeholder="Gõ sở thích rồi nhấn Enter hoặc Thêm...">
+                                <button type="button" id="btnAddTag" class="btn btn-secondary btn-sm">
+                                    <i class="fa-solid fa-plus"></i> Thêm
+                                </button>
+                            </div>
+                            <div class="editable-tags" id="editTagsList">
+                                <!-- Tags will be dynamically rendered here -->
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-ghost" id="btnCancelEdit">Huỷ</button>
+                            <button type="submit" class="btn btn-primary" id="btnSaveProfile">
+                                <span class="btn-text"><i class="fa-solid fa-check"></i> Lưu thay đổi</span>
+                                <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <i class="toast-icon fa-solid fa-circle-check"></i>
+        <span id="toastMessage">Thông báo</span>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

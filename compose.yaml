@@ -3,31 +3,29 @@ services:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - "27017:27017" # Mở cổng để code ngoài máy Mac kết nối vào
+      - "27017:27017" 
     volumes:
-      - mongo_data:/data/db # Lưu dữ liệu bền vững, tắt container không bị mất data
-    restart: always
+      - mongo_data:/data/db 
 
   mongo-express:
     image: mongo-express:latest
     container_name: mongo-express
     ports:
-      - "8081:8081" # Mở cổng web quản trị
+      - "8081:8081" 
     environment:
-      - ME_CONFIG_MONGODB_SERVER=mongodb # Trỏ tới đúng tên service mongodb ở trên
-      - ME_CONFIG_BASICAUTH=false # Tắt popup đăng nhập trên trình duyệt
-    depends_on:
-      - mongodb # Ép Docker phải khởi động MongoDB trước rồi mới bật Mongo Express
+      - ME_CONFIG_MONGODB_SERVER=mongodb 
+      - ME_CONFIG_BASICAUTH=false 
+      - mongodb 
     restart: always
 
   my-app:
     build: .
-    image: my-app:1.0 # Dùng Image bạn vừa build
+    image: my-app:1.0 
     container_name: my-fastapi-app
     ports:
-      - "8000:8000" # Mở cổng 8000 để truy cập từ máy thật
+      - "8000:8000" 
     environment:
-      - MONGO_URI=mongodb://mongodb:27017 # Kết nối tới service mongodb qua mạng nội bộ
+      - MONGO_URI=mongodb://mongodb:27017 
     depends_on:
       - mongodb # Chờ MongoDB khởi động trước
     restart: on-failure

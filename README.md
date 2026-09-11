@@ -30,7 +30,7 @@ Sau khi chạy xong:
 | FastAPI App | http://localhost:8000 |
 | Mongo Express (DB UI) | http://localhost:8081 |
 
-## ech Stack
+## Tech Stack
 
 - **FastAPI** — Python web framework
 - **MongoDB** — NoSQL database

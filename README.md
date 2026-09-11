@@ -1,8 +1,8 @@
-# 🐳 Docker Profile App
+# Docker Profile App
 
 Ứng dụng **FastAPI** đơn giản được đóng gói bằng **Docker**, kết nối **MongoDB** để lưu trữ hồ sơ cá nhân.
 
-## 📁 Cấu trúc project
+## Cấu trúc project
 
 ```
 .
@@ -16,9 +16,7 @@
 └── .gitignore
 ```
 
-## 🚀 Cách chạy
-
-> Yêu cầu: đã cài [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+## Cách chạy
 
 ```bash
 # Khởi động toàn bộ stack (MongoDB + App)
@@ -32,7 +30,7 @@ Sau khi chạy xong:
 | FastAPI App | http://localhost:8000 |
 | Mongo Express (DB UI) | http://localhost:8081 |
 
-## 🛠 Tech Stack
+## ech Stack
 
 - **FastAPI** — Python web framework
 - **MongoDB** — NoSQL database

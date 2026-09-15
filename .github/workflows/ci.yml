@@ -23,7 +23,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r app/requirements.txt
+          # Cài trực tiếp công cụ test và lint để đảm bảo có lệnh chạy
+          pip install flake8 pytest httpx
+          # Cài các thư viện của app nếu tìm thấy file
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f app/requirements.txt ]; then pip install -r app/requirements.txt; fi
 
       - name: Lint with Flake8
         run: |

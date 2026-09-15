@@ -252,6 +252,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- System Health Check ---
+    const systemStatusBadge = document.getElementById('systemStatusBadge');
+    const statusText = document.getElementById('statusText');
+
+    async function checkHealth() {
+        if (!systemStatusBadge || !statusText) return;
+        systemStatusBadge.className = 'status-badge';
+        statusText.textContent = 'Đang kiểm tra...';
+
+        try {
+            const res = await fetch('/api/health');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.database === 'connected') {
+                    systemStatusBadge.className = 'status-badge online';
+                    statusText.textContent = 'Hệ thống & DB: Hoạt động';
+                } else {
+                    systemStatusBadge.className = 'status-badge degraded';
+                    statusText.textContent = 'API: Online (DB Chưa kết nối)';
+                }
+            } else {
+                systemStatusBadge.className = 'status-badge offline';
+                statusText.textContent = 'API Lỗi';
+            }
+        } catch (e) {
+            systemStatusBadge.className = 'status-badge offline';
+            statusText.textContent = 'Mất kết nối máy chủ';
+        }
+    }
+
+    if (systemStatusBadge) {
+        systemStatusBadge.addEventListener('click', () => {
+            checkHealth();
+            showToast('Đang làm mới trạng thái hệ thống...', 'success');
+        });
+    }
+
     // Initial load
     fetchProfile();
+    checkHealth();
 });
+

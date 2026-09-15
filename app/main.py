@@ -8,17 +8,23 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator
 from motor.motor_asyncio import AsyncIOMotorClient
 
+APP_VERSION = "1.1.0"
+
 app = FastAPI(
     title="User Profile App",
     description="FastAPI profile application connected to MongoDB (Docker)",
-    version="1.0.0"
+    version=APP_VERSION
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
 # Mount static files (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Templates configuration
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
@@ -27,7 +33,7 @@ EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "profile_app")
 
-client = AsyncIOMotorClient(MONGO_URI)
+client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=2000)
 db = client[MONGO_DB_NAME]
 collection = db["profiles"]
 
@@ -69,6 +75,32 @@ async def fetch_profile_from_db():
 
 
 # --- Routes ---
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring & CI/CD pipeline tests."""
+    db_status = "connected"
+    try:
+        await client.admin.command('ping')
+    except Exception:
+        db_status = "disconnected"
+
+    return {
+        "status": "healthy",
+        "service": "user-profile-app",
+        "version": APP_VERSION,
+        "database": db_status
+    }
+
+
+@app.get("/api/version")
+async def get_version():
+    """Returns application version and metadata."""
+    return {
+        "version": APP_VERSION,
+        "environment": os.getenv("ENVIRONMENT", "production")
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Render the main profile web page."""
@@ -76,7 +108,7 @@ async def read_root(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"profile": profile_data}
+        context={"profile": profile_data, "version": APP_VERSION}
     )
 
 

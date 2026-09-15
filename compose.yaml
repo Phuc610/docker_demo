@@ -15,7 +15,6 @@ services:
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongodb 
       - ME_CONFIG_BASICAUTH=false 
-      - mongodb 
     restart: always
 
   my-app:

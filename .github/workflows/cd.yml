@@ -3,7 +3,7 @@ name: FastAPI CD (Build & Push Docker)
 on:
   push:
     branches: [ "deployment" ]
-  merge-request:
+  pull_request:
     branches: [ "deployment" ] 
 jobs:
   build-and-push:

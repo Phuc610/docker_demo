@@ -12,18 +12,52 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
     <!-- Background glow decorations -->
     <div class="bg-shape shape-1"></div>
     <div class="bg-shape shape-2"></div>
 
-    <div class="container">
-        <!-- Main Profile Card -->
-        <main class="profile-card" id="profileCard">
-            <!-- Header banner -->
-            <div class="card-header"></div>
+    <!-- Global Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-inner">
+            <div class="brand">
+                <i class="fa-solid fa-layer-group brand-icon"></i>
+                <span class="brand-text">Profile<strong>Hub</strong></span>
+            </div>
+
+            <div class="navbar-actions">
+                <!-- Khi chưa đăng nhập: hiện nút Đăng nhập & Đăng ký -->
+                <div id="navGuest" class="nav-auth-group">
+                    <button type="button" class="btn-nav-link" id="btnNavLogin">
+                        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+                    </button>
+                    <button type="button" class="btn-nav-cta" id="btnNavRegister">
+                        <i class="fa-solid fa-user-plus"></i> Đăng ký
+                    </button>
+                </div>
+
+                <!-- Khi đã đăng nhập: chỉ hiện Gmail và nút Đăng xuất -->
+                <div id="navUser" class="nav-auth-group hidden">
+                    <div class="user-email-chip">
+                        <i class="fa-regular fa-envelope"></i>
+                        <span id="navUserEmail">user@gmail.com</span>
+                    </div>
+                    <button type="button" class="btn-nav-logout" id="btnLogout" title="Đăng xuất">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <div class="container">
+            <!-- Main Profile Card -->
+            <main class="profile-card" id="profileCard">
+                <!-- Header banner -->
+                <div class="card-header"></div>
 
             <!-- Profile Content Area -->
             <div class="card-body">
@@ -105,6 +139,65 @@
             </div>
 
         </main>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Login / Register) -->
+    <div id="authModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button type="button" class="modal-close" id="btnCloseAuthModal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="modal-tabs">
+                <button type="button" class="tab-btn active" id="tabBtnLogin">Đăng nhập</button>
+                <button type="button" class="tab-btn" id="tabBtnRegister">Đăng ký mới</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="formLogin" class="auth-form active">
+                <p class="modal-desc">Đăng nhập với tài khoản NestJS API</p>
+                <div class="form-group">
+                    <label for="loginEmail"><i class="fa-regular fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword"><i class="fa-solid fa-lock"></i> Mật khẩu</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="auth-error-msg hidden" id="loginError"></div>
+                <button type="submit" class="btn btn-primary btn-block" id="btnSubmitLogin">
+                    <span class="btn-text"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</span>
+                    <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="formRegister" class="auth-form hidden">
+                <p class="modal-desc">Tạo tài khoản mới và lưu thông tin vào MongoDB</p>
+                <div class="form-group">
+                    <label for="regName"><i class="fa-regular fa-user"></i> Họ và tên</label>
+                    <input type="text" id="regName" class="form-control" placeholder="Nguyễn Văn A" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail"><i class="fa-regular fa-envelope"></i> Email</label>
+                    <input type="email" id="regEmail" class="form-control" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword"><i class="fa-solid fa-lock"></i> Mật khẩu (tối thiểu 6 ký tự)</label>
+                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="regInterests"><i class="fa-solid fa-tags"></i> Kỹ năng / Sở thích (cách nhau bởi dấu phẩy)</label>
+                    <input type="text" id="regInterests" class="form-control" placeholder="NestJS, FastAPI, Docker, Python">
+                </div>
+                <div class="auth-error-msg hidden" id="registerError"></div>
+                <button type="submit" class="btn btn-primary btn-block" id="btnSubmitRegister">
+                    <span class="btn-text"><i class="fa-solid fa-user-plus"></i> Đăng ký ngay</span>
+                    <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -114,6 +207,6 @@
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=3"></script>
 </body>
 </html>

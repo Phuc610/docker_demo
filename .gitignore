@@ -18,5 +18,14 @@ env/
 # Docker volumes / local data
 mongo_data/
 
+# Node / NestJS
+node_modules/
+dist/
+npm-debug.log*
+
+# Environment
+.env
+!.env.example
+
 # OS
 .DS_Store

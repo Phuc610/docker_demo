@@ -36,6 +36,8 @@ Sau khi chạy xong:
 | FastAPI App | http://localhost:8000 |
 | Health Check API | http://localhost:8000/api/health |
 | Version API | http://localhost:8000/api/version |
+| NestJS Auth & API | http://localhost:3000 |
+| NestJS Swagger Docs | http://localhost:3000/api/docs |
 | Mongo Express (DB UI) | http://localhost:8081 |
 
 ## Chạy Test tự động (Pytest)

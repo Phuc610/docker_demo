@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 from typing import List
 import httpx
@@ -23,6 +24,16 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Mount static files (CSS, JS)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Mount uploads directory (Avatar files)
+UPLOAD_DIR = os.getenv("UPLOAD_DIR")
+if not UPLOAD_DIR:
+    if sys.platform == "linux" and os.path.exists("/home/app"):
+        UPLOAD_DIR = "/home/uploads"
+    else:
+        UPLOAD_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "uploads"))
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Templates configuration
 templates = Jinja2Templates(directory=TEMPLATES_DIR)

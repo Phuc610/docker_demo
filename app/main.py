@@ -33,7 +33,7 @@ EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "profile_app")
 
-client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 db = client[MONGO_DB_NAME]
 collection = db["profiles"]
 

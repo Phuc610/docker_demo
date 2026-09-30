@@ -17,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
           'MONGO_URI',
           'mongodb://localhost:27017/profile_app',
         ),
+        dbName: configService.get<string>('MONGO_DB_NAME', 'profile_app'),
       }),
     }),
     UsersModule,

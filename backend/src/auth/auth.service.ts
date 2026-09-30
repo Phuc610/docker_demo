@@ -61,4 +61,13 @@ export class AuthService {
     };
     return this.jwtService.sign(payload);
   }
+
+  async updateAvatar(userId: string, avatarUrl: string) {
+    const updated = await this.usersService.update(userId, { avatar: avatarUrl });
+    return {
+      message: 'Cập nhật ảnh đại diện thành công',
+      avatarUrl: updated.avatar,
+      user: updated.toJSON(),
+    };
+  }
 }

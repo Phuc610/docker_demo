@@ -12,7 +12,7 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css?v=3">
+    <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
     <!-- Background glow decorations -->
@@ -61,9 +61,14 @@
 
             <!-- Profile Content Area -->
             <div class="card-body">
-                <!-- Avatar with dynamic initials -->
+                <!-- Avatar with dynamic initials & upload trigger -->
                 <div class="avatar-container">
                     <div class="avatar" id="avatarLetter">NA</div>
+                    <img id="avatarImage" class="avatar-image hidden" alt="Avatar">
+                    <label for="avatarFileInput" class="avatar-upload-trigger" id="btnUploadAvatar" title="Đổi ảnh đại diện">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarFileInput" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden">
                 </div>
 
                 <!-- === VIEW MODE === -->
@@ -207,6 +212,6 @@
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="/static/app.js?v=3"></script>
+    <script src="/static/app.js?v=4"></script>
 </body>
 </html>

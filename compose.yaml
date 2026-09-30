@@ -25,6 +25,7 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/home/app
+      - ./uploads:/home/uploads
     environment:
       - MONGO_URI=mongodb://mongodb:27017
     depends_on:
@@ -39,6 +40,8 @@ services:
     container_name: nest-backend
     ports:
       - "3000:3000"
+    volumes:
+      - ./uploads:/home/uploads
     environment:
       - MONGO_URI=mongodb://mongodb:27017/profile_app
       - JWT_SECRET=super_secret_jwt_key_development_only_12345

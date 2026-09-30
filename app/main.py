@@ -1,7 +1,8 @@
 import os
 import re
 from typing import List
-from fastapi import FastAPI, Request, HTTPException
+import httpx
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -99,6 +100,42 @@ async def get_version():
         "version": APP_VERSION,
         "environment": os.getenv("ENVIRONMENT", "production")
     }
+
+
+# --- Reverse Proxy: chuyển tiếp request /auth sang NestJS (port 3000) ---
+NEST_INTERNAL_URL = os.getenv("NEST_INTERNAL_URL", "http://127.0.0.1:3000")
+
+@app.api_route("/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def proxy_to_nest(request: Request, path: str):
+    """Forward /auth requests to internal NestJS service on port 3000."""
+    target_url = f"{NEST_INTERNAL_URL}/auth/{path}"
+    body = await request.body()
+
+    headers = dict(request.headers)
+    headers.pop("host", None)
+    headers.pop("content-length", None)
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            res = await client.request(
+                method=request.method,
+                url=target_url,
+                headers=headers,
+                content=body,
+                params=request.query_params
+            )
+            resp_headers = {k: v for k, v in res.headers.items() if k.lower() not in ("transfer-encoding", "content-encoding", "content-length")}
+            return Response(
+                content=res.content,
+                status_code=res.status_code,
+                headers=resp_headers,
+                media_type=res.headers.get("content-type")
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=503,
+                detail=f"NestJS service error: {str(e)}"
+            )
 
 
 @app.get("/", response_class=HTMLResponse)

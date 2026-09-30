@@ -17,6 +17,8 @@ env/
 
 # Docker volumes / local data
 mongo_data/
+uploads/
+!uploads/.gitkeep
 
 # Node / NestJS
 node_modules/

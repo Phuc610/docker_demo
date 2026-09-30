@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewEmail = document.getElementById('viewEmail');
     const viewInterests = document.getElementById('viewInterests');
     const avatarLetter = document.getElementById('avatarLetter');
+    const avatarImage = document.getElementById('avatarImage');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const btnUploadAvatar = document.getElementById('btnUploadAvatar');
 
     const inputName = document.getElementById('inputName');
     const inputEmail = document.getElementById('inputEmail');
@@ -135,7 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderViewMode() {
         viewName.textContent = currentProfile.name;
         viewEmail.textContent = currentProfile.email;
-        avatarLetter.textContent = getInitials(currentProfile.name);
+
+        if (currentProfile.avatar) {
+            avatarImage.src = currentProfile.avatar;
+            avatarImage.classList.remove('hidden');
+            avatarLetter.classList.add('hidden');
+        } else {
+            avatarLetter.textContent = getInitials(currentProfile.name);
+            avatarLetter.classList.remove('hidden');
+            avatarImage.classList.add('hidden');
+        }
 
         viewInterests.innerHTML = '';
         if (!currentProfile.interests || currentProfile.interests.length === 0) {
@@ -214,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentProfile = {
                     name: user.name,
                     email: user.email,
-                    interests: user.interests || []
+                    interests: user.interests || [],
+                    avatar: user.avatar || ''
                 };
                 renderViewMode();
             } else {
@@ -280,6 +293,61 @@ document.addEventListener('DOMContentLoaded', () => {
             updateAuthUI(null);
             showToast('Đã đăng xuất tài khoản', 'success');
             checkAuthAndLoadProfile();
+        });
+    }
+
+    // --- Avatar Upload Handler ---
+    if (avatarFileInput && btnUploadAvatar) {
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const token = getToken();
+            if (!token) {
+                showToast('Vui lòng đăng nhập để thay đổi ảnh đại diện!', 'error');
+                openModal('login');
+                avatarFileInput.value = '';
+                return;
+            }
+
+            if (file.size > 3 * 1024 * 1024) {
+                showToast('Dung lượng ảnh tối đa là 3MB', 'error');
+                avatarFileInput.value = '';
+                return;
+            }
+
+            const icon = btnUploadAvatar.querySelector('i');
+            btnUploadAvatar.classList.add('uploading');
+            if (icon) icon.className = 'fa-solid fa-circle-notch fa-spin';
+
+            try {
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                const res = await fetch('/auth/avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || 'Lỗi khi tải ảnh lên');
+                }
+
+                currentProfile.avatar = data.avatarUrl;
+                renderViewMode();
+                showToast('Cập nhật ảnh đại diện thành công!', 'success');
+            } catch (err) {
+                console.error('Avatar upload error:', err);
+                showToast(err.message || 'Lỗi khi tải ảnh', 'error');
+            } finally {
+                btnUploadAvatar.classList.remove('uploading');
+                if (icon) icon.className = 'fa-solid fa-camera';
+                avatarFileInput.value = '';
+            }
         });
     }
 

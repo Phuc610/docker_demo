@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // NestJS Backend URL (cùng host, port 3000)
-    const NEST_API_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+    // Dùng relative path để FastAPI chuyển tiếp ngầm sang NestJS
+    const NEST_API_URL = '';
 
     // State
     let currentProfile = {

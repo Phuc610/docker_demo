@@ -507,34 +507,57 @@ document.addEventListener('DOMContentLoaded', () => {
         systemStatusBadge.className = 'status-badge';
         statusText.textContent = 'Đang kiểm tra kết nối...';
 
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         let fastApiOk = false;
         let nestJsOk = false;
 
         try {
-            const resFastApi = await fetch('/api/health');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            const resFastApi = await fetch('/api/health', { signal: controller.signal });
+            clearTimeout(timeoutId);
             if (resFastApi.ok) {
                 const data = await resFastApi.json();
                 fastApiOk = data.database === 'connected';
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn('FastAPI health check failed:', e);
+        }
 
-        try {
-            const resNest = await fetch(`${NEST_API_URL}/auth/me`, {
-                headers: { 'Authorization': 'Bearer test' }
-            });
-            // 401 Unauthorized nghĩa là NestJS đang chạy tốt và guard hoạt động đúng
-            nestJsOk = (resNest.status === 401 || resNest.ok);
-        } catch (e) {}
+        if (isLocal) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                const resNest = await fetch(`${NEST_API_URL}/auth/me`, {
+                    headers: { 'Authorization': 'Bearer test' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                // 401 Unauthorized nghĩa là NestJS đang chạy tốt và guard hoạt động đúng
+                nestJsOk = (resNest.status === 401 || resNest.ok);
+            } catch (e) {}
+        }
 
-        if (fastApiOk && nestJsOk) {
-            systemStatusBadge.className = 'status-badge online';
-            statusText.textContent = 'Hệ thống: FastAPI + NestJS Online';
-        } else if (fastApiOk) {
-            systemStatusBadge.className = 'status-badge online';
-            statusText.textContent = 'FastAPI: Online (NestJS: Chờ khởi động)';
+        if (isLocal) {
+            if (fastApiOk && nestJsOk) {
+                systemStatusBadge.className = 'status-badge online';
+                statusText.textContent = 'Hệ thống: FastAPI + NestJS Online';
+            } else if (fastApiOk) {
+                systemStatusBadge.className = 'status-badge online';
+                statusText.textContent = 'FastAPI: Online (NestJS: Chờ khởi động)';
+            } else {
+                systemStatusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Hệ thống ngoại tuyến / Lỗi DB';
+            }
         } else {
-            systemStatusBadge.className = 'status-badge offline';
-            statusText.textContent = 'Hệ thống ngoại tuyến';
+            // Khi chạy trên Render hoặc Cloud
+            if (fastApiOk) {
+                systemStatusBadge.className = 'status-badge online';
+                statusText.textContent = 'Hệ thống & DB: Hoạt động';
+            } else {
+                systemStatusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Lỗi kết nối MongoDB';
+            }
         }
     }
 

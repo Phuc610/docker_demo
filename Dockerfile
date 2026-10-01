@@ -1,5 +1,5 @@
 # --- Stage 1: Build NestJS ---
-FROM node:20-alpine AS nest-builder
+FROM node:20-slim AS nest-builder
 
 WORKDIR /nest
 
@@ -8,6 +8,7 @@ RUN npm install
 
 COPY backend/ ./
 RUN npm run build
+RUN npm prune --omit=dev
 
 # --- Stage 2: Final Runner (Python + Node.js) ---
 FROM python:3.12-slim
@@ -26,10 +27,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy mã nguồn FastAPI
 COPY ./app /home/app
 
-# Cài đặt dependencies và copy bản build của NestJS
+# Copy dependencies và bản build của NestJS
 WORKDIR /home/backend
 COPY backend/package*.json ./
-RUN npm install --omit=dev
+COPY --from=nest-builder /nest/node_modules ./node_modules
 COPY --from=nest-builder /nest/dist ./dist
 
 # Copy script khởi động chung

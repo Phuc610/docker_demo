@@ -12,7 +12,7 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css?v=6">
+    <link rel="stylesheet" href="/static/style.css?v=9">
 </head>
 <body>
     <!-- Background glow decorations -->
@@ -25,6 +25,30 @@
             <div class="brand">
                 <i class="fa-solid fa-layer-group brand-icon"></i>
                 <span class="brand-text">Profile<strong>Hub</strong></span>
+            </div>
+
+            <!-- Search Bar: Tìm kiếm tài khoản khác -->
+            <div class="nav-search-wrapper" id="navSearchWrapper">
+                <div class="search-input-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="inputSearchUsers" placeholder="Tìm tài khoản theo tên, email, kỹ năng..." autocomplete="off">
+                    <button type="button" class="btn-clear-search hidden" id="btnClearSearch" title="Xoá tìm kiếm">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <span class="search-spinner hidden" id="searchSpinner">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    </span>
+                </div>
+
+                <!-- Dropdown kết quả tìm kiếm -->
+                <div class="search-results-dropdown hidden" id="searchResultsDropdown">
+                    <div class="search-results-header">
+                        <span id="searchResultsCount">Kết quả tìm kiếm</span>
+                    </div>
+                    <div class="search-results-list" id="searchResultsList">
+                        <!-- Render items dynamically -->
+                    </div>
+                </div>
             </div>
 
             <div class="navbar-actions">
@@ -151,10 +175,9 @@
 
             <!-- Card Footer with System Health Badge -->
             <div class="card-footer">
-                <div class="status-badge" id="systemStatusBadge" title="Nhấn để kiểm tra lại trạng thái API">
+                <div class="status-badge online" id="systemStatusBadge" title="Nhấn để kiểm tra lại trạng thái hệ thống">
                     <span class="status-dot"></span>
-                    <span class="status-text" id="statusText">Đang kiểm tra kết nối...</span>
-                    <span class="version-tag">v{{ version }}</span>
+                    <span class="status-text" id="statusText">Hệ thống hoạt động</span>
                 </div>
             </div>
 
@@ -255,6 +278,37 @@
         </div>
     </div>
 
+    <!-- View Public User Profile Modal -->
+    <div id="userProfileModal" class="modal-overlay hidden">
+        <div class="modal-card public-profile-card">
+            <button type="button" class="modal-close" id="btnCloseUserProfileModal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="public-card-header">
+                <div class="public-avatar-wrapper">
+                    <div class="public-avatar-letter" id="publicAvatarLetter">??</div>
+                    <img id="publicAvatarImage" class="public-avatar-img hidden" src="" alt="Avatar">
+                </div>
+            </div>
+
+            <div class="public-card-body">
+                <h3 class="public-user-name" id="publicUserName">Tên Người Dùng</h3>
+                <p class="public-user-email" id="publicUserEmail"><i class="fa-regular fa-envelope"></i> email@example.com</p>
+                <div class="public-user-interests-section">
+                    <h4><i class="fa-solid fa-tags"></i> Kỹ năng & Sở thích</h4>
+                    <div class="tags-container" id="publicUserInterests">
+                        <!-- dynamic tags -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-primary" id="btnClosePublicProfile">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden">
         <i class="toast-icon fa-solid fa-circle-check"></i>
@@ -262,6 +316,6 @@
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="/static/app.js?v=6"></script>
+    <script src="/static/app.js?v=9"></script>
 </body>
 </html>

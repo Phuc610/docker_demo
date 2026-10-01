@@ -807,25 +807,194 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLocal) {
             if (fastApiOk && nestJsOk) {
                 systemStatusBadge.className = 'status-badge online';
-                statusText.textContent = 'Hệ thống: FastAPI + NestJS Online';
+                statusText.textContent = 'Hệ thống hoạt động';
             } else if (fastApiOk) {
                 systemStatusBadge.className = 'status-badge online';
-                statusText.textContent = 'FastAPI: Online (NestJS: Chờ khởi động)';
+                statusText.textContent = 'Hệ thống hoạt động';
             } else {
                 systemStatusBadge.className = 'status-badge offline';
-                statusText.textContent = 'Hệ thống ngoại tuyến / Lỗi DB';
+                statusText.textContent = 'Hệ thống ngoại tuyến';
             }
         } else {
             // Khi chạy trên Render hoặc Cloud
             if (fastApiOk) {
                 systemStatusBadge.className = 'status-badge online';
-                statusText.textContent = 'Hệ thống & DB: Hoạt động';
+                statusText.textContent = 'Hệ thống hoạt động';
             } else {
                 systemStatusBadge.className = 'status-badge offline';
-                statusText.textContent = 'Lỗi kết nối MongoDB';
+                statusText.textContent = 'Hệ thống ngoại tuyến';
             }
         }
     }
+
+    // --- User Search & Public Profile Feature ---
+    const navSearchWrapper = document.getElementById('navSearchWrapper');
+    const inputSearchUsers = document.getElementById('inputSearchUsers');
+    const btnClearSearch = document.getElementById('btnClearSearch');
+    const searchSpinner = document.getElementById('searchSpinner');
+    const searchResultsDropdown = document.getElementById('searchResultsDropdown');
+    const searchResultsCount = document.getElementById('searchResultsCount');
+    const searchResultsList = document.getElementById('searchResultsList');
+
+    const userProfileModal = document.getElementById('userProfileModal');
+    const btnCloseUserProfileModal = document.getElementById('btnCloseUserProfileModal');
+    const btnClosePublicProfile = document.getElementById('btnClosePublicProfile');
+    const publicAvatarLetter = document.getElementById('publicAvatarLetter');
+    const publicAvatarImage = document.getElementById('publicAvatarImage');
+    const publicUserName = document.getElementById('publicUserName');
+    const publicUserEmail = document.getElementById('publicUserEmail');
+    const publicUserInterests = document.getElementById('publicUserInterests');
+
+    let searchDebounceTimeout = null;
+
+    function openPublicProfileModal(user) {
+        if (!userProfileModal) return;
+        if (searchResultsDropdown) searchResultsDropdown.classList.add('hidden');
+
+        publicUserName.textContent = user.name || 'Người dùng';
+        publicUserEmail.innerHTML = `<i class="fa-regular fa-envelope"></i> ${user.email || ''}`;
+
+        if (user.avatar) {
+            publicAvatarImage.src = user.avatar;
+            publicAvatarImage.classList.remove('hidden');
+            publicAvatarLetter.classList.add('hidden');
+        } else {
+            publicAvatarImage.classList.add('hidden');
+            publicAvatarLetter.classList.remove('hidden');
+            publicAvatarLetter.textContent = getInitials(user.name || user.email);
+        }
+
+        // Render interests
+        publicUserInterests.innerHTML = '';
+        const interests = user.interests || [];
+        if (interests.length > 0) {
+            interests.forEach((tag) => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = tag;
+                publicUserInterests.appendChild(span);
+            });
+        } else {
+            const span = document.createElement('span');
+            span.style.color = '#94a3b8';
+            span.style.fontSize = '0.82rem';
+            span.textContent = 'Chưa có kỹ năng/sở thích nào được liệt kê.';
+            publicUserInterests.appendChild(span);
+        }
+
+        userProfileModal.classList.remove('hidden');
+    }
+
+    function closePublicProfileModal() {
+        if (!userProfileModal) return;
+        userProfileModal.classList.add('hidden');
+    }
+
+    if (btnCloseUserProfileModal) btnCloseUserProfileModal.addEventListener('click', closePublicProfileModal);
+    if (btnClosePublicProfile) btnClosePublicProfile.addEventListener('click', closePublicProfileModal);
+    if (userProfileModal) {
+        userProfileModal.addEventListener('click', (e) => {
+            if (e.target === userProfileModal) closePublicProfileModal();
+        });
+    }
+
+    async function executeSearch(query) {
+        if (!query || !query.trim()) {
+            if (searchResultsDropdown) searchResultsDropdown.classList.add('hidden');
+            if (btnClearSearch) btnClearSearch.classList.add('hidden');
+            return;
+        }
+
+        if (btnClearSearch) btnClearSearch.classList.remove('hidden');
+        if (searchSpinner) searchSpinner.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/auth/users/search?q=${encodeURIComponent(query.trim())}`);
+            const users = await res.json();
+
+            if (!res.ok) {
+                throw new Error('Lỗi tìm kiếm');
+            }
+
+            searchResultsList.innerHTML = '';
+            if (!users || users.length === 0) {
+                searchResultsCount.textContent = 'Kết quả tìm kiếm';
+                searchResultsList.innerHTML = `
+                    <div class="search-empty-state">
+                        <i class="fa-solid fa-user-slash"></i>
+                        Không tìm thấy tài khoản phù hợp với "${query.trim()}"
+                    </div>
+                `;
+            } else {
+                searchResultsCount.textContent = `${users.length} tài khoản tìm thấy`;
+                users.forEach((user) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'search-result-item';
+
+                    const avatarHtml = user.avatar
+                        ? `<img src="${user.avatar}" alt="${user.name}">`
+                        : getInitials(user.name || user.email);
+
+                    const tagsHtml = (user.interests || []).slice(0, 3).map((tag) => 
+                        `<span class="search-tag-chip">${tag}</span>`
+                    ).join('');
+
+                    item.innerHTML = `
+                        <div class="search-item-avatar">${avatarHtml}</div>
+                        <div class="search-item-info">
+                            <span class="search-item-name">${user.name || 'Người dùng'}</span>
+                            <span class="search-item-email">${user.email || ''}</span>
+                            ${tagsHtml ? `<div class="search-item-tags">${tagsHtml}</div>` : ''}
+                        </div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        openPublicProfileModal(user);
+                    });
+
+                    searchResultsList.appendChild(item);
+                });
+            }
+
+            searchResultsDropdown.classList.remove('hidden');
+        } catch (err) {
+            console.error('Search error:', err);
+        } finally {
+            if (searchSpinner) searchSpinner.classList.add('hidden');
+        }
+    }
+
+    if (inputSearchUsers) {
+        inputSearchUsers.addEventListener('input', (e) => {
+            const query = e.target.value;
+            clearTimeout(searchDebounceTimeout);
+            searchDebounceTimeout = setTimeout(() => {
+                executeSearch(query);
+            }, 250);
+        });
+
+        inputSearchUsers.addEventListener('focus', () => {
+            if (inputSearchUsers.value.trim()) {
+                executeSearch(inputSearchUsers.value);
+            }
+        });
+    }
+
+    if (btnClearSearch) {
+        btnClearSearch.addEventListener('click', () => {
+            inputSearchUsers.value = '';
+            btnClearSearch.classList.add('hidden');
+            searchResultsDropdown.classList.add('hidden');
+            inputSearchUsers.focus();
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (navSearchWrapper && !navSearchWrapper.contains(e.target)) {
+            if (searchResultsDropdown) searchResultsDropdown.classList.add('hidden');
+        }
+    });
 
     if (systemStatusBadge) {
         systemStatusBadge.addEventListener('click', () => {

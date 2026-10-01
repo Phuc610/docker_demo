@@ -54,4 +54,25 @@ export class UsersService {
     }
     return user;
   }
+
+  async searchUsers(query: string, limit = 10): Promise<UserDocument[]> {
+    if (!query || !query.trim()) {
+      return [];
+    }
+    const cleanQuery = query.trim();
+    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'i');
+
+    return this.userModel
+      .find({
+        $or: [
+          { name: regex },
+          { email: regex },
+          { interests: regex },
+        ],
+      })
+      .select('-password')
+      .limit(limit)
+      .exec();
+  }
 }

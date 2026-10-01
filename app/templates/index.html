@@ -12,7 +12,7 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
 <body>
     <!-- Background glow decorations -->
@@ -38,15 +38,30 @@
                     </button>
                 </div>
 
-                <!-- Khi đã đăng nhập: chỉ hiện Gmail và nút Đăng xuất -->
+                <!-- Khi đã đăng nhập: hiện Dropdown khi bấm vào User Email -->
                 <div id="navUser" class="nav-auth-group hidden">
-                    <div class="user-email-chip">
-                        <i class="fa-regular fa-envelope"></i>
-                        <span id="navUserEmail">user@gmail.com</span>
+                    <div class="user-menu-wrapper" id="userMenuWrapper">
+                        <button type="button" class="user-email-chip" id="btnUserDropdown" aria-expanded="false" title="Menu tài khoản">
+                            <i class="fa-regular fa-envelope"></i>
+                            <span id="navUserEmail">user@gmail.com</span>
+                            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        
+                        <div class="user-dropdown-menu hidden" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <span class="dropdown-user-name" id="dropdownUserName">Tài khoản</span>
+                                <span class="dropdown-user-email" id="dropdownUserEmail">email@example.com</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item" id="btnOpenChangePassword">
+                                <i class="fa-solid fa-key"></i> Đổi mật khẩu
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item text-danger" id="btnLogout">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                            </button>
+                        </div>
                     </div>
-                    <button type="button" class="btn-nav-logout" id="btnLogout" title="Đăng xuất">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-                    </button>
                 </div>
             </div>
         </div>
@@ -205,6 +220,41 @@
         </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button type="button" class="modal-close" id="btnCloseChangePassword">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="modal-header-simple">
+                <h3><i class="fa-solid fa-key" style="color: #6366f1; margin-right: 8px;"></i> Đổi mật khẩu</h3>
+                <p class="modal-desc">Nhập mật khẩu hiện tại và đặt mật khẩu mới</p>
+            </div>
+            <form id="formChangePassword" class="auth-form active">
+                <div class="form-group">
+                    <label for="currentPassword"><i class="fa-solid fa-lock"></i> Mật khẩu hiện tại</label>
+                    <input type="password" id="currentPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword"><i class="fa-solid fa-key"></i> Mật khẩu mới (tối thiểu 6 ký tự)</label>
+                    <input type="password" id="newPassword" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword"><i class="fa-solid fa-shield-halved"></i> Xác nhận mật khẩu mới</label>
+                    <input type="password" id="confirmNewPassword" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+                <div class="auth-error-msg hidden" id="changePasswordError"></div>
+                <div class="modal-actions" style="margin-top: 1.25rem; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-ghost" id="btnCancelChangePassword">Huỷ</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitChangePassword">
+                        <span class="btn-text"><i class="fa-solid fa-check"></i> Lưu mật khẩu</span>
+                        <span class="spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden">
         <i class="toast-icon fa-solid fa-circle-check"></i>
@@ -212,6 +262,6 @@
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="/static/app.js?v=4"></script>
+    <script src="/static/app.js?v=6"></script>
 </body>
 </html>

@@ -3,15 +3,17 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Put,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -140,6 +142,23 @@ export class AuthController {
   @ApiResponse({ status: 409, description: 'Email mới đã được sử dụng bởi tài khoản khác' })
   async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user._id.toString(), dto);
+  }
+
+  @Get('users/search')
+  @ApiOperation({ summary: 'Tìm kiếm tài khoản người dùng theo tên, email hoặc sở thích/kỹ năng' })
+  @ApiQuery({ name: 'q', required: false, description: 'Từ khoá tìm kiếm' })
+  @ApiResponse({ status: 200, description: 'Danh sách người dùng khớp với từ khoá' })
+  async searchUsers(@Query('q') q: string) {
+    return this.authService.searchUsers(q || '');
+  }
+
+  @Get('users/:id')
+  @ApiOperation({ summary: 'Xem chi tiết hồ sơ công khai của một người dùng' })
+  @ApiParam({ name: 'id', description: 'ID người dùng' })
+  @ApiResponse({ status: 200, description: 'Thông tin hồ sơ công khai của người dùng' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng' })
+  async getUserById(@Param('id') id: string) {
+    return this.authService.getUserById(id);
   }
 }
 

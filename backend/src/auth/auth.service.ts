@@ -124,5 +124,15 @@ export class AuthService {
       accessToken: token,
     };
   }
+
+  async searchUsers(query: string, limit = 10) {
+    const users = await this.usersService.searchUsers(query, limit);
+    return users.map((u) => u.toJSON());
+  }
+
+  async getUserById(id: string) {
+    const user = await this.usersService.findById(id);
+    return user.toJSON();
+  }
 }
 

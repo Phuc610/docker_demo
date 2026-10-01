@@ -2,12 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dùng relative path để FastAPI chuyển tiếp ngầm sang NestJS
     const NEST_API_URL = '';
 
-    // State
-    let currentProfile = {
-        name: '',
-        email: '',
-        interests: []
+    // Default guest profile
+    const DEFAULT_GUEST_PROFILE = {
+        name: "Nguyễn Văn A",
+        email: "nguyenvana@example.com",
+        interests: ["Python", "FastAPI", "Docker", "DevOps"],
+        avatar: ""
     };
+
+    // State
+    let currentProfile = { ...DEFAULT_GUEST_PROFILE, interests: [...DEFAULT_GUEST_PROFILE.interests] };
     let currentUser = null; // Thông tin tài khoản NestJS đã đăng nhập
     let tempInterests = [];
 
@@ -41,13 +45,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
 
-    // DOM Elements - Navbar Auth
+    // DOM Elements - Navbar Auth & Dropdown
     const navGuest = document.getElementById('navGuest');
     const navUser = document.getElementById('navUser');
     const navUserEmail = document.getElementById('navUserEmail');
     const btnNavLogin = document.getElementById('btnNavLogin');
     const btnNavRegister = document.getElementById('btnNavRegister');
     const btnLogout = document.getElementById('btnLogout');
+    const btnUserDropdown = document.getElementById('btnUserDropdown');
+    const userMenuWrapper = document.getElementById('userMenuWrapper');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+    const dropdownUserName = document.getElementById('dropdownUserName');
+    const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+    const btnOpenChangePassword = document.getElementById('btnOpenChangePassword');
+
+    // DOM Elements - Change Password Modal
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const btnCloseChangePassword = document.getElementById('btnCloseChangePassword');
+    const btnCancelChangePassword = document.getElementById('btnCancelChangePassword');
+    const formChangePassword = document.getElementById('formChangePassword');
+    const currentPasswordInput = document.getElementById('currentPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    const changePasswordError = document.getElementById('changePasswordError');
+    const btnSubmitChangePassword = document.getElementById('btnSubmitChangePassword');
 
     // DOM Elements - Auth Modal
     const authModal = document.getElementById('authModal');
@@ -121,6 +142,25 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('access_token');
     }
 
+    // User dropdown controls
+    function toggleUserDropdown() {
+        if (!userMenuWrapper) return;
+        const isOpen = userMenuWrapper.classList.toggle('open');
+        if (isOpen) {
+            userDropdownMenu.classList.remove('hidden');
+            btnUserDropdown.setAttribute('aria-expanded', 'true');
+        } else {
+            closeUserDropdown();
+        }
+    }
+
+    function closeUserDropdown() {
+        if (!userMenuWrapper) return;
+        userMenuWrapper.classList.remove('open');
+        if (userDropdownMenu) userDropdownMenu.classList.add('hidden');
+        if (btnUserDropdown) btnUserDropdown.setAttribute('aria-expanded', 'false');
+    }
+
     // Update Navbar Auth UI
     function updateAuthUI(user) {
         currentUser = user;
@@ -128,9 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
             navGuest.classList.add('hidden');
             navUser.classList.remove('hidden');
             navUserEmail.textContent = user.email || 'user@example.com';
+            if (dropdownUserName) dropdownUserName.textContent = user.name || 'Người dùng';
+            if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
         } else {
             navGuest.classList.remove('hidden');
             navUser.classList.add('hidden');
+            closeUserDropdown();
         }
     }
 
@@ -209,7 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = getToken();
         if (!token) {
             updateAuthUI(null);
-            await fetchFastAPIProfile();
+            currentProfile = { ...DEFAULT_GUEST_PROFILE, interests: [...DEFAULT_GUEST_PROFILE.interests] };
+            renderViewMode();
             return;
         }
 
@@ -234,12 +278,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Token hết hạn hoặc không hợp lệ
                 removeToken();
                 updateAuthUI(null);
-                await fetchFastAPIProfile();
+                currentProfile = { ...DEFAULT_GUEST_PROFILE, interests: [...DEFAULT_GUEST_PROFILE.interests] };
+                renderViewMode();
             }
         } catch (err) {
             console.warn('NestJS Backend chưa sẵn sàng hoặc không kết nối được:', err);
             updateAuthUI(null);
-            await fetchFastAPIProfile();
+            currentProfile = { ...DEFAULT_GUEST_PROFILE, interests: [...DEFAULT_GUEST_PROFILE.interests] };
+            renderViewMode();
         }
     }
 
@@ -286,13 +332,135 @@ document.addEventListener('DOMContentLoaded', () => {
     tabBtnLogin.addEventListener('click', () => switchTab('login'));
     tabBtnRegister.addEventListener('click', () => switchTab('register'));
 
+    // --- User Dropdown Handlers ---
+    if (btnUserDropdown) {
+        btnUserDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleUserDropdown();
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (userMenuWrapper && !userMenuWrapper.contains(e.target)) {
+            closeUserDropdown();
+        }
+    });
+
+    // --- Change Password Modal Handlers ---
+    function openChangePasswordModal() {
+        closeUserDropdown();
+        if (!changePasswordModal) return;
+        changePasswordModal.classList.remove('hidden');
+        if (changePasswordError) changePasswordError.classList.add('hidden');
+        if (formChangePassword) formChangePassword.reset();
+        setTimeout(() => currentPasswordInput?.focus(), 50);
+    }
+
+    function closeChangePasswordModal() {
+        if (!changePasswordModal) return;
+        changePasswordModal.classList.add('hidden');
+        if (changePasswordError) changePasswordError.classList.add('hidden');
+        if (formChangePassword) formChangePassword.reset();
+    }
+
+    if (btnOpenChangePassword) {
+        btnOpenChangePassword.addEventListener('click', () => {
+            openChangePasswordModal();
+        });
+    }
+
+    if (btnCloseChangePassword) btnCloseChangePassword.addEventListener('click', closeChangePasswordModal);
+    if (btnCancelChangePassword) btnCancelChangePassword.addEventListener('click', closeChangePasswordModal);
+
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('click', (e) => {
+            if (e.target === changePasswordModal) closeChangePasswordModal();
+        });
+    }
+
+    if (formChangePassword) {
+        formChangePassword.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (changePasswordError) changePasswordError.classList.add('hidden');
+
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmNewPassword = confirmNewPasswordInput.value;
+
+            if (newPassword.length < 6) {
+                changePasswordError.textContent = 'Mật khẩu mới phải có tối thiểu 6 ký tự!';
+                changePasswordError.classList.remove('hidden');
+                newPasswordInput.focus();
+                return;
+            }
+
+            if (newPassword !== confirmNewPassword) {
+                changePasswordError.textContent = 'Xác nhận mật khẩu mới không khớp!';
+                changePasswordError.classList.remove('hidden');
+                confirmNewPasswordInput.focus();
+                return;
+            }
+
+            if (currentPassword === newPassword) {
+                changePasswordError.textContent = 'Mật khẩu mới không được trùng với mật khẩu hiện tại!';
+                changePasswordError.classList.remove('hidden');
+                newPasswordInput.focus();
+                return;
+            }
+
+            const token = getToken();
+            if (!token) {
+                showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!', 'error');
+                closeChangePasswordModal();
+                openModal('login');
+                return;
+            }
+
+            // Button loading state
+            const btnText = btnSubmitChangePassword.querySelector('.btn-text');
+            const spinner = btnSubmitChangePassword.querySelector('.spinner');
+            btnSubmitChangePassword.disabled = true;
+            if (btnText) btnText.classList.add('hidden');
+            if (spinner) spinner.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || 'Không thể đổi mật khẩu');
+                }
+
+                showToast(data.message || 'Đổi mật khẩu thành công!', 'success');
+                closeChangePasswordModal();
+            } catch (err) {
+                console.error('Change password error:', err);
+                changePasswordError.textContent = err.message || 'Lỗi khi đổi mật khẩu';
+                changePasswordError.classList.remove('hidden');
+            } finally {
+                btnSubmitChangePassword.disabled = false;
+                if (btnText) btnText.classList.remove('hidden');
+                if (spinner) spinner.classList.add('hidden');
+            }
+        });
+    }
+
     // --- Logout Handler ---
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
+            closeUserDropdown();
             removeToken();
             updateAuthUI(null);
+            currentProfile = { ...DEFAULT_GUEST_PROFILE, interests: [...DEFAULT_GUEST_PROFILE.interests] };
+            renderViewMode();
             showToast('Đã đăng xuất tài khoản', 'success');
-            checkAuthAndLoadProfile();
         });
     }
 
@@ -481,6 +649,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Switch to Edit Mode ---
     btnOpenEdit.addEventListener('click', () => {
+        const token = getToken();
+        if (!token) {
+            showToast('Vui lòng đăng nhập để chỉnh sửa thông tin hồ sơ của bạn!', 'error');
+            openModal('login');
+            return;
+        }
+
         inputName.value = currentProfile.name;
         inputEmail.value = currentProfile.email;
         tempInterests = [...currentProfile.interests];
@@ -500,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
         viewMode.classList.add('active');
     });
 
-    // --- Save Profile (FastAPI sync) ---
+    // --- Save Profile (NestJS Auth Sync) ---
     profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -527,6 +702,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isValid) return;
 
+        const token = getToken();
+        if (!token) {
+            showToast('Vui lòng đăng nhập để lưu thay đổi hồ sơ!', 'error');
+            openModal('login');
+            return;
+        }
+
         btnSaveProfile.disabled = true;
         btnText.classList.add('hidden');
         spinner.classList.remove('hidden');
@@ -538,18 +720,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 interests: tempInterests
             };
 
-            const res = await fetch('/api/profile', {
+            const res = await fetch('/auth/me', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
 
+            const data = await res.json();
             if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.detail?.[0]?.msg || 'Cập nhật thất bại');
+                throw new Error(data.message || 'Cập nhật thất bại');
             }
 
-            currentProfile = await res.json();
+            if (data.accessToken) {
+                setToken(data.accessToken);
+            }
+
+            const updatedUser = data.user;
+            currentUser = updatedUser;
+            currentProfile = {
+                name: updatedUser.name,
+                email: updatedUser.email,
+                interests: updatedUser.interests || [],
+                avatar: updatedUser.avatar || ''
+            };
+
+            updateAuthUI(updatedUser);
             renderViewMode();
 
             editMode.classList.remove('active');

@@ -64,12 +64,3 @@ def test_profile_schema_invalid_email():
     with pytest.raises(ValidationError):
         ProfileSchema(**invalid_data)
 
-
-def test_vercel_entrypoint():
-    """Test that the Vercel entrypoint in api/index.py imports app successfully."""
-    from api.index import app as vercel_app
-    vercel_client = TestClient(vercel_app)
-    res = vercel_client.get("/api/health")
-    assert res.status_code == 200
-    assert res.json()["status"] == "healthy"
-

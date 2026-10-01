@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Request,
   UploadedFile,
   UseGuards,
@@ -17,6 +18,8 @@ import * as fs from 'fs';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 function getUploadDir(): string {
@@ -114,6 +117,29 @@ export class AuthController {
       throw new BadRequestException('Vui lòng chọn file ảnh để tải lên');
     }
     const avatarUrl = `/uploads/${file.filename}`;
-    return this.authService.updateAvatar(req.user._id, avatarUrl);
+    return this.authService.updateAvatar(req.user._id.toString(), avatarUrl);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Đổi mật khẩu người dùng' })
+  @ApiResponse({ status: 200, description: 'Đổi mật khẩu thành công' })
+  @ApiResponse({ status: 400, description: 'Mật khẩu hiện tại sai hoặc mật khẩu mới trùng lặp' })
+  @ApiResponse({ status: 401, description: 'Chưa đăng nhập hoặc token hết hạn' })
+  async changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user._id.toString(), dto);
+  }
+
+  @Put('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Cập nhật thông tin hồ sơ của tài khoản đang đăng nhập' })
+  @ApiResponse({ status: 200, description: 'Cập nhật thành công, trả về thông tin user mới và token' })
+  @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
+  @ApiResponse({ status: 409, description: 'Email mới đã được sử dụng bởi tài khoản khác' })
+  async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user._id.toString(), dto);
   }
 }
+

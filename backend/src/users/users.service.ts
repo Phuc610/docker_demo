@@ -37,6 +37,14 @@ export class UsersService {
     return user;
   }
 
+  async findByIdWithPassword(id: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id).select('+password').exec();
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+    return user;
+  }
+
   async update(id: string, updateData: Partial<User>): Promise<UserDocument> {
     const user = await this.userModel
       .findByIdAndUpdate(id, { $set: updateData }, { new: true })
